@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Escáner de Código de Barras</title>
+  https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js
+  <style>
+    #reader { width: 100%; max-width: 400px; margin: auto; }
+    #result { margin-top: 20px; font-size: 1.2em; color: green; text-align: center; }
+    button { padding: 10px 20px; font-size: 16px; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h1 style="text-align:center;">Escanea un Código de Barras</h1>
+  <div style="text-align:center;">
+    <button onclick="startScanner()">Iniciar escaneo</button>
+  </div>
+  <div id="reader"></div>
+  <div id="result">Esperando escaneo...</div>
+
+  <script>
+    let scanner;
+
+    function startScanner() {
+      const config = {
+        fps: 10,
+        qrbox: { width: 250, height: 250 },
+        rememberLastUsedCamera: true,
+        supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
+      };
+
+      scanner = new Html5Qrcode("reader");
+
+      Html5Qrcode.getCameras().then(devices => {
+        if (devices && devices.length) {
+          const cameraId = devices[0].id;
+          scanner.start(
+            cameraId,
+            config,
+            (decodedText, decodedResult) => {
+              document.getElementById('result').innerText = `Código detectado: ${decodedText}`;
+              scanner.stop();
+            },
+            errorMessage => {
+              // Puedes mostrar errores si quieres
+            }
+          ).catch(err => {
+            document.getElementById('result').innerText = `Error al iniciar la cámara: ${err}`;
+          });
+        } else {
+          document.getElementById('result').innerText = "No se encontraron cámaras.";
+        }
+      }).catch(err => {
+        document.getElementById('result').innerText = `Error al acceder a la cámara: ${err}`;
+      });
+    }
+  </script>
+</body>
+</html>
