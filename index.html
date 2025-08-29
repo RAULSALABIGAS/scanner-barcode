@@ -2,57 +2,50 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Escáner de Código de Barras</title>
-  https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js
+  <title>Escáner de Código de Barras con jsQR</title>
   <style>
-    #reader { width: 100%; max-width: 400px; margin: auto; }
-    #result { margin-top: 20px; font-size: 1.2em; color: green; text-align: center; }
-    button { padding: 10px 20px; font-size: 16px; margin-top: 20px; }
+    body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+    canvas, video { width: 100%; max-width: 400px; margin-top: 20px; }
+    #result { margin-top: 20px; font-size: 1.2em; color: green; }
   </style>
 </head>
 <body>
-  <h1 style="text-align:center;">Escanea un Código de Barras</h1>
-  <div style="text-align:center;">
-    <button onclick="startScanner()">Iniciar escaneo</button>
-  </div>
-  <div id="reader"></div>
+  <h1>Escanea un Código QR</h1>
+  <video id="video" autoplay muted playsinline></video>
+  <canvas id="canvas" hidden></canvas>
   <div id="result">Esperando escaneo...</div>
 
+  https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js
   <script>
-    let scanner;
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const result = document.getElementById('result');
+    const context = canvas.getContext('2d');
 
-    function startScanner() {
-      const config = {
-        fps: 10,
-        qrbox: { width: 250, height: 250 },
-        rememberLastUsedCamera: true,
-        supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
-      };
-
-      scanner = new Html5Qrcode("reader");
-
-      Html5Qrcode.getCameras().then(devices => {
-        if (devices && devices.length) {
-          const cameraId = devices[0].id;
-          scanner.start(
-            cameraId,
-            config,
-            (decodedText, decodedResult) => {
-              document.getElementById('result').innerText = `Código detectado: ${decodedText}`;
-              scanner.stop();
-            },
-            errorMessage => {
-              // Puedes mostrar errores si quieres
-            }
-          ).catch(err => {
-            document.getElementById('result').innerText = `Error al iniciar la cámara: ${err}`;
-          });
-        } else {
-          document.getElementById('result').innerText = "No se encontraron cámaras.";
-        }
-      }).catch(err => {
-        document.getElementById('result').innerText = `Error al acceder a la cámara: ${err}`;
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+      .then(stream => {
+        video.srcObject = stream;
+        video.setAttribute("playsinline", true);
+        video.play();
+        requestAnimationFrame(scan);
+      })
+      .catch(err => {
+        result.textContent = `Error al acceder a la cámara: ${err}`;
       });
+
+    function scan() {
+      if (video.readyState === video.HAVE_ENOUGH_DATA) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+        const code = jsQR(imageData.data, imageData.width, imageData.height);
+        if (code) {
+          result.textContent = `Código detectado: ${code.data}`;
+          return;
+        }
+      }
+      requestAnimationFrame(scan);
     }
   </script>
 </body>
