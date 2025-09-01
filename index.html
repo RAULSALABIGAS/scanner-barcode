@@ -1,39 +1,104 @@
 <!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <title>Escáner EAN con Scandit</title>
-  <script src="https://cdn.jsdelivr.net/npm/scandit-sdk@latest/build/sc.js
-  <style>
-    body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
-    #scandit-barcode-picker { width: 100%; height: 400px; margin-top: 20px; }
-    #result { margin-top: 20px; font-size: 1.2em; color: green; }
-  </style>
-</head>
-<body>
-  <h1>Escanea un Código de Barras EAN</h1>
-  <div id="scandit-barcode-picker"></div>
-  <div id="result">Esperando escaneo...</div>
-
-  <script>
-    ScanditSDK.configure(
-      "AhlmYi/hCaRqPjr3bcfsvedD1xQ8EmxfuQV5XzUaBQZ2NYMLkGRFavAtu/GOaPj+LmOJ46NtgtlKbb3+qWcFLthAT1kzdFH/CT83o1EfgyTHLJenwAPwrAcuBtlfXP2c2HoK+coCRuLbVnJTHXO64fBoYDYObxtb11YIZnlZm0clQwOcHFphkTZ4D2joaTC2wW5zvslt8BsTRunus0A6RSVxBFtwXKP9iEZRpkx+voLfemU+8RV4YlJV6KHyVbnd1nGkbHJn6qLiTpnJw28ECftCxEQ7XKPhKHeih8JyHCreVw2Xo0uK1fJ76Sp2Z9lk/n8/H65eKBxidOSQYWJ+VZBagR/tT/wUVnq2q6Roz6e2ftVVX00URXd5HDzIRcLQWjWZ/bNboJPTabpNaiyZ9dBBOmD3f4t8IHrpeWolki1EcODXCX0+BmsCsMsHbu6v709wpVdhiwy0FBGIBxA6H+IA3NGiWu8KXWHAqr5gL6sVdLJHBWTyLk54ND++d3xSe2+4g4x8MXHZbz/eBBK5LXE+AWdrXiiMN2NS/MVREUxbHzDKD/fH3nm2jFc4qTDiKSViWxQ8fCyxPG3oIrX2xai5D66xeXDlhD5LF/5nPbQJx5hYHC5EOlyOiKF67Ef4Cgi5s5cSMOk4H+iTDA++FFfawAoog7lqawtW9+7O+21ezOU8t2e00eA1EceIvGJxRjZe9ss0x93i/3Htfm7i4dGtM27WaHgjAinJuumGCRhUANXyM7SDdeedCp8cw24lk6rsCAj5sQ0+8zfsH5pouCVYQhx2IcCXMIzX7Avc/3gygTt6srUcGkuTBv3h8Hf58tOhus7E91USNybFKjjHxNav06PfXENwKnwf2WBhWcjJXvewsVzanP+dh72821dDTpW37PODb0uxmBPfCzl/wHe2rCmIHFaoxvkpr7moDcmpBfguTbRWw/3+HdMxOlLokF6D8/5+zJHFIDP2nIrlCyb3T7W/dZX4wNJXKVE5/skJUPeblaATIWk01jOHQb37lw1rzknwDksTB00GngZGl1nO3xSoKMByaz5TAq7B6OZAvFj9Mj1wrD33JHQYq5TxY011utFHTQPf+DtB4853UKrT6otz6DRGfrrf9JYD7MZ3WC/YC6ChzSYCHaO08HKldZR2x2Q6HZi41sdeNA/kMmTTkihlEil+hWPI19uIgjHGY44MATw/AfOwU3kyXu+sgiI=",
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Scandit CDN Simple sample</title>
+    <script type="importmap">
       {
-        engineLocation: "https://cdn.jsdelivr.net/npm/scandit-sdk@latest/build/"
+        "imports": {
+          "@scandit/web-datacapture-core": "https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-core@7.3.0/build/js/index.js",
+          "@scandit/web-datacapture-barcode": "https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-barcode@7.3.0/build/js/index.js",
+
+          "@scandit/web-datacapture-barcode/": "https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-barcode@7.3.0/",
+          "@scandit/web-datacapture-core/": "https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-core@7.3.0/"
+        }
       }
-    ).then(() => {
-      return ScanditSDK.BarcodePicker.create(document.getElementById("scandit-barcode-picker"), {
-        playSoundOnScan: true,
-        vibrateOnScan: true
+    </script>
+    <link
+      rel="modulepreload"
+      href="https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-core@7.3.0/build/js/index.js"
+    />
+    <link
+      rel="modulepreload"
+      href="https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-barcode@7.3.0/build/js/index.js"
+    />
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+      }
+      #app {
+        height: 100%;
+      }
+    </style>
+    <!-- Check the latest version here https://github.com/guybedford/es-module-shims/releases -->
+    <script
+      async
+      src="https://ga.jspm.io/npm:es-module-shims@1.10.0/dist/es-module-shims.js"
+    ></script>
+    <script type="module">
+      import {
+        configure,
+        DataCaptureView,
+        Camera,
+        DataCaptureContext,
+        FrameSourceState,
+      } from "@scandit/web-datacapture-core";
+
+      import {
+        barcodeCaptureLoader,
+        BarcodeCaptureSettings,
+        BarcodeCapture,
+        Symbology,
+      } from "@scandit/web-datacapture-barcode";
+
+      let view = new DataCaptureView();
+      view.connectToElement(document.getElementById("app"));
+      view.showProgressBar();
+
+      await configure({
+        licenseKey: "-- ENTER LICENSE KEY HERE --",
+        libraryLocation:
+          "https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-barcode@7.3.0/sdc-lib/",
+        moduleLoaders: [barcodeCaptureLoader()],
       });
-    }).then(barcodePicker => {
-      barcodePicker.onScan(scanResult => {
-        const barcode = scanResult.barcodes[0];
-        document.getElementById("result").textContent = `Código detectado: ${barcode.data}`;
+      view.hideProgressBar();
+
+      const camera = Camera.default;
+
+      // Depending on the use case further camera settings adjustments can be made here.
+      const context = await DataCaptureContext.create();
+      await view.setContext(context);
+
+      const cameraSettings = BarcodeCapture.recommendedCameraSettings;
+      await camera.applySettings(cameraSettings);
+
+      await context.setFrameSource(camera);
+      await context.frameSource.switchToDesiredState(FrameSourceState.On);
+
+      const settings = new BarcodeCaptureSettings();
+      settings.enableSymbologies([Symbology.Code128, Symbology.QR]);
+
+      let barcodeCapture = await BarcodeCapture.forContext(context, settings);
+
+      barcodeCapture.addListener({
+        didScan: async (barcodeCaptureMode, session) => {
+          const barcode = session.newlyRecognizedBarcode;
+          if (!barcode) {
+            return;
+          }
+          const symbology = new SymbologyDescription(barcode.symbology);
+          alert(`Scanned: ${barcode.data ?? ""}\n(${symbology.readableName})`);
+        },
       });
-    }).catch(error => {
-      document.getElementById("result").textContent = `Error: ${error.message}`;
-    });
-  </script>
-</body>
+
+      await barcodeCapture.setEnabled(true);
+    </script>
+  </head>
+  <body>
+    <div id="app"></div>
+  </body>
 </html>
