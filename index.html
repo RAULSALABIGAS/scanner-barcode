@@ -2,51 +2,38 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Escáner de Código de Barras con jsQR</title>
+  <title>Escáner EAN con Scandit</title>
+  <script src="https://cdn.jsdelivr.net/npm/scandit-sdk@latest/build/sc.js
   <style>
     body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
-    canvas, video { width: 100%; max-width: 400px; margin-top: 20px; }
+    #scandit-barcode-picker { width: 100%; height: 400px; margin-top: 20px; }
     #result { margin-top: 20px; font-size: 1.2em; color: green; }
   </style>
 </head>
 <body>
-  <h1>Escanea un Código QR</h1>
-  <video id="video" autoplay muted playsinline></video>
-  <canvas id="canvas" hidden></canvas>
+  <h1>Escanea un Código de Barras EAN</h1>
+  <div id="scandit-barcode-picker"></div>
   <div id="result">Esperando escaneo...</div>
 
-  https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js
   <script>
-    const video = document.getElementById('video');
-    const canvas = document.getElementById('canvas');
-    const result = document.getElementById('result');
-    const context = canvas.getContext('2d');
-
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-      .then(stream => {
-        video.srcObject = stream;
-        video.setAttribute("playsinline", true);
-        video.play();
-        requestAnimationFrame(scan);
-      })
-      .catch(err => {
-        result.textContent = `Error al acceder a la cámara: ${err}`;
-      });
-
-    function scan() {
-      if (video.readyState === video.HAVE_ENOUGH_DATA) {
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-        const code = jsQR(imageData.data, imageData.width, imageData.height);
-        if (code) {
-          result.textContent = `Código detectado: ${code.data}`;
-          return;
-        }
+    ScanditSDK.configure(
+      "AhlmYi/hCaRqPjr3bcfsvedD1xQ8EmxfuQV5XzUaBQZ2NYMLkGRFavAtu/GOaPj+LmOJ46NtgtlKbb3+qWcFLthAT1kzdFH/CT83o1EfgyTHLJenwAPwrAcuBtlfXP2c2HoK+coCRuLbVnJTHXO64fBoYDYObxtb11YIZnlZm0clQwOcHFphkTZ4D2joaTC2wW5zvslt8BsTRunus0A6RSVxBFtwXKP9iEZRpkx+voLfemU+8RV4YlJV6KHyVbnd1nGkbHJn6qLiTpnJw28ECftCxEQ7XKPhKHeih8JyHCreVw2Xo0uK1fJ76Sp2Z9lk/n8/H65eKBxidOSQYWJ+VZBagR/tT/wUVnq2q6Roz6e2ftVVX00URXd5HDzIRcLQWjWZ/bNboJPTabpNaiyZ9dBBOmD3f4t8IHrpeWolki1EcODXCX0+BmsCsMsHbu6v709wpVdhiwy0FBGIBxA6H+IA3NGiWu8KXWHAqr5gL6sVdLJHBWTyLk54ND++d3xSe2+4g4x8MXHZbz/eBBK5LXE+AWdrXiiMN2NS/MVREUxbHzDKD/fH3nm2jFc4qTDiKSViWxQ8fCyxPG3oIrX2xai5D66xeXDlhD5LF/5nPbQJx5hYHC5EOlyOiKF67Ef4Cgi5s5cSMOk4H+iTDA++FFfawAoog7lqawtW9+7O+21ezOU8t2e00eA1EceIvGJxRjZe9ss0x93i/3Htfm7i4dGtM27WaHgjAinJuumGCRhUANXyM7SDdeedCp8cw24lk6rsCAj5sQ0+8zfsH5pouCVYQhx2IcCXMIzX7Avc/3gygTt6srUcGkuTBv3h8Hf58tOhus7E91USNybFKjjHxNav06PfXENwKnwf2WBhWcjJXvewsVzanP+dh72821dDTpW37PODb0uxmBPfCzl/wHe2rCmIHFaoxvkpr7moDcmpBfguTbRWw/3+HdMxOlLokF6D8/5+zJHFIDP2nIrlCyb3T7W/dZX4wNJXKVE5/skJUPeblaATIWk01jOHQb37lw1rzknwDksTB00GngZGl1nO3xSoKMByaz5TAq7B6OZAvFj9Mj1wrD33JHQYq5TxY011utFHTQPf+DtB4853UKrT6otz6DRGfrrf9JYD7MZ3WC/YC6ChzSYCHaO08HKldZR2x2Q6HZi41sdeNA/kMmTTkihlEil+hWPI19uIgjHGY44MATw/AfOwU3kyXu+sgiI=",
+      {
+        engineLocation: "https://cdn.jsdelivr.net/npm/scandit-sdk@latest/build/"
       }
-      requestAnimationFrame(scan);
-    }
+    ).then(() => {
+      return ScanditSDK.BarcodePicker.create(document.getElementById("scandit-barcode-picker"), {
+        playSoundOnScan: true,
+        vibrateOnScan: true
+      });
+    }).then(barcodePicker => {
+      barcodePicker.onScan(scanResult => {
+        const barcode = scanResult.barcodes[0];
+        document.getElementById("result").textContent = `Código detectado: ${barcode.data}`;
+      });
+    }).catch(error => {
+      document.getElementById("result").textContent = `Error: ${error.message}`;
+    });
   </script>
 </body>
 </html>
